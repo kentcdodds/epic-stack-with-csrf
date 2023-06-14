@@ -27,6 +27,9 @@ import {
 	usernameSchema,
 } from '~/utils/user-validation.ts'
 import { twoFAVerificationType } from './profile.two-factor.tsx'
+import { AuthenticityTokenInput, verifyAuthenticityToken } from 'remix-utils'
+import { getSession } from '~/utils/session.server.ts'
+import { GeneralErrorBoundary } from '~/components/error-boundary.tsx'
 
 const profileFormSchema = z.object({
 	name: nameSchema.optional(),
@@ -61,8 +64,10 @@ export async function loader({ request }: DataFunctionArgs) {
 }
 
 export async function action({ request }: DataFunctionArgs) {
-	const userId = await requireUserId(request)
+	const session = await getSession(request.headers.get('Cookie'))
 	const formData = await request.formData()
+	await verifyAuthenticityToken(formData, session)
+	const userId = await requireUserId(request)
 	const submission = await parse(formData, {
 		async: true,
 		schema: profileFormSchema.superRefine(
@@ -180,6 +185,7 @@ export default function EditUserProfile() {
 					</div>
 				</div>
 				<Form method="POST" {...form.props}>
+					<AuthenticityTokenInput />
 					<div className="grid grid-cols-6 gap-x-10">
 						<Field
 							className="col-span-3"
@@ -262,5 +268,23 @@ export default function EditUserProfile() {
 			</div>
 			<Outlet />
 		</div>
+	)
+}
+
+export function ErrorBoundary() {
+	return (
+		<GeneralErrorBoundary
+			statusHandlers={{
+				422: () => (
+					<p>
+						The form was submitted improperly. Please{' '}
+						<Link to="." className="underline">
+							try again
+						</Link>{' '}
+						and be sure to not modify the form submission data.
+					</p>
+				),
+			}}
+		/>
 	)
 }

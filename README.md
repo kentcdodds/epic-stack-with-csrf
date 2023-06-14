@@ -1,48 +1,17 @@
-<div align="center">
-  <h1 align="center"><a href="https://www.epicweb.dev/epic-stack">The Epic Stack 🚀</a></h1>
-  <strong align="center">
-    Ditch analysis paralysis and start shipping Epic Web apps.
-  </strong>
-  <p>
-    This is an opinionated project starter and reference that allows teams to
-    ship their ideas to production faster and on a more stable foundation based
-    on the experience of <a href="https://kentcdodds.com">Kent C. Dodds</a> and
-    <a href="https://github.com/epicweb-dev/epic-stack/graphs/contributors">contributors</a>.
-  </p>
-</div>
+# Epic Stack with CSRF Protection
 
-```sh
-npx create-remix@latest --typescript --install --template epicweb-dev/epic-stack
-```
+This is an example of how to integrate the
+[`remix-utils`](https://github.com/sergiodxa/remix-utils) package utilities for
+[Cross-Site Request Forgery (CSRF)](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
+protection with the Epic Stack. The easiest way to explore the example is to
+pull up
+[the commit history](https://github.com/kentcdodds/epic-stack-with-csrf/commits/main).
 
-[![The Epic Stack](https://github.com/epicweb-dev/epic-stack/assets/1500684/345a3947-54ad-481d-888a-dbc1d1f313c1)](https://www.epicweb.dev/epic-stack)
+Following the steps laid out in the Remix Utils docs is sufficient for this:
 
-[The Epic Stack](https://www.epicweb.dev/epic-stack)
-
-<hr />
-
-## Watch Kent's Introduction to The Epic Stack
-
-[![screenshot of a YouTube video](https://github.com/epicweb-dev/epic-stack/assets/1500684/6beafa78-41c6-47e1-b999-08d3d3e5cb57)](https://www.youtube.com/watch?v=yMK5SVRASxM)
-
-["The Epic Stack" by Kent C. Dodds at #RemixConf 2023 💿](https://www.youtube.com/watch?v=yMK5SVRASxM)
-
-## Docs
-
-[Read the docs](https://github.com/epicweb-dev/epic-stack/blob/main/docs)
-(please 🙏).
-
-## Support
-
-- 🆘 Join the
-  [discussion on GitHub](https://github.com/epicweb-dev/epic-stack/discussions)
-  and the [KCD Community on Discord](https://kcd.im/discord).
-- 💡 Create an
-  [idea discussion](https://github.com/epicweb-dev/epic-stack/discussions/new?category=ideas)
-  for suggestions.
-- 🐛 Open a [GitHub issue](https://github.com/epicweb-dev/epic-stack/issues) to
-  report a bug.
-
-## Thanks
-
-You rock 🪨
+1. Install `remix-utils`
+2. Generate the authenticity token in the `root.tsx` loader (be certain to
+   commit the session to set the cookie)
+3. Wrap the App in the `<AuthenticityTokenProvider />` and provide the token
+4. Render a Form with the `<AuthenticityTokenInput />` component
+5. Verify in the Action using `verifyAuthenticityToken` and the session.

@@ -34,6 +34,8 @@ import { getUserImgSrc } from './utils/misc.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
+import { commitSession, getSession } from './utils/session.server.ts'
+import { AuthenticityTokenProvider, createAuthenticityToken } from 'remix-utils'
 
 export const links: LinksFunction = () => {
 	return [
@@ -74,6 +76,8 @@ export const meta: V2_MetaFunction = () => {
 }
 
 export async function loader({ request }: DataFunctionArgs) {
+	const cookieSession = await getSession(request.headers.get('Cookie'))
+	const token = createAuthenticityToken(cookieSession)
 	const timings = makeTimings('root loader')
 	const userId = await time(() => getUserId(request), {
 		timings,
@@ -100,6 +104,7 @@ export async function loader({ request }: DataFunctionArgs) {
 
 	return json(
 		{
+			csrf: token,
 			user,
 			requestInfo: {
 				hints: getHints(request),
@@ -114,6 +119,7 @@ export async function loader({ request }: DataFunctionArgs) {
 		{
 			headers: {
 				'Server-Timing': timings.toString(),
+				'Set-Cookie': await commitSession(cookieSession),
 			},
 		},
 	)
@@ -185,7 +191,17 @@ function App() {
 		</html>
 	)
 }
-export default withSentry(App)
+
+function AppWithCSRF() {
+	const data = useLoaderData<typeof loader>()
+	return (
+		<AuthenticityTokenProvider token={data.csrf}>
+			<App />
+		</AuthenticityTokenProvider>
+	)
+}
+
+export default withSentry(AppWithCSRF)
 
 function UserDropdown() {
 	const user = useUser()
